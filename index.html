@@ -1,121 +1,86 @@
-<html>
-  <head>
-    <script type="text/javascript" src="https://getfirebug.com/firebug-lite-debug.js"></script>
-    <meta name="description" content="CS4406 Computer Graphics - Exercise #6" />
-    <meta charset="utf-8" />
-    <title>Assignment UNIT # 6, Earth and Moon</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earth and Moon Animation</title>
     <style>
-      #container {
-        background: #ffffff;
-      }
+        body { margin: 0; overflow: hidden; }
+        #container { width: 100%; height: 100%; }
     </style>
-    <meta charset=utf-8 />
-    <title></title>
-  </head>
-  <body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
     <div id="container"></div>
-  </body>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
-  <script src="http://uopeopleweb.com/js/dat.gui.min.js"></script>
-  <script src="https://threejs.org/build/three.js"></script>
-  <script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/controls/OrbitControls.js"></script>
-  <script src="http://uopeopleweb.com/js/math.js"></script>
-  <script src="http://uopeopleweb.com/js/Detector.js"></script>
-  <script type="text/javascript">
-    var WIDTH = 600,
-        HEIGHT = 400;
-    // set some camera attributes
-    var VIEW_ANGLE = 20,
-        ASPECT = WIDTH / HEIGHT,
-        NEAR = 1,
-        FAR = 1000;
-    // get the DOM element to attach to
-    var $container = $('#container');
-    // create a WebGL renderer
-    var renderer = new THREE.WebGLRenderer({ antialias: true });
 
-    //create scene
-    var scene = new THREE.Scene();
-    var clock = new THREE.Clock();
+    <script>
+        // 1. Set up the scene, camera, and renderer
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        var renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;  // Enable shadows
+        document.body.appendChild(renderer.domElement);
 
-    //create camera and add to scene
-    var camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
-    camera.position.z = 600;
-    scene.add(camera)
+        // 2. Add a light source to simulate the Sun
+        var light = new THREE.DirectionalLight(0xffffff, 1);  // White light
+        light.position.set(1, 1, 1).normalize(); // Positioning light to the right
+        light.castShadow = true;  // Enable shadows for the light
+        scene.add(light);
 
-    //disable rotating camera
-    var cameraControls = new THREE.OrbitControls(camera, renderer.domElement);
-    cameraControls.enabled = false;
-    renderer.setSize(WIDTH, HEIGHT);
-    // attach the render-supplied DOM element
-    $container.append(renderer.domElement);
-    // Here we create a point light. The point light shines a spotlight on the scene which will produce
-    // areas of light and shadow to bring out the details of the function being graphed
-    // LIGHT
-    //Create a new ambient light - only used when working on the model
-    var light = new THREE.AmbientLight(0x888888)
-    //scene.add( light )
-    //Create a new directional light
-    var light = new THREE.DirectionalLight(0xfdfcf0, 1)
-    light.position.set(100, 0, 80)
-    light.castShadow = true;
-    //light.shadowDarkness = 10.5;
-    //light.shadowCameraVisible=true;
-    scene.add(light)
+        // 3. Create the Earth with the new texture
+        var earthTexture = new THREE.TextureLoader().load("https://upload.wikimedia.org/wikipedia/commons/c/cf/WorldMap-A_non-Frame.png");
+        var earthMaterial = new THREE.MeshPhongMaterial({ map: earthTexture });
+        var earthGeometry = new THREE.SphereGeometry(50, 50, 50);
+        var earth = new THREE.Mesh(earthGeometry, earthMaterial);
+        earth.castShadow = true;  // Earth will cast a shadow
+        earth.receiveShadow = true;  // Earth will receive a shadow
+        scene.add(earth);
 
-    //I use this to see where the light is pointing
-    //var helper = new THREE.DirectionalLightHelper( light, 5 );
-    //scene.add( helper );
+        // 4. Create the Moon with the provided texture
+        var moonTexture = new THREE.TextureLoader().load("https://upload.wikimedia.org/wikipedia/commons/d/db/Moonmap_from_clementine_data.png");
+        var moonMaterial = new THREE.MeshPhongMaterial({ map: moonTexture });
+        var moonGeometry = new THREE.SphereGeometry(15, 50, 50);
+        var moon = new THREE.Mesh(moonGeometry, moonMaterial);
+        moon.castShadow = true;  // Moon will cast a shadow
+        moon.receiveShadow = true;  // Moon will receive a shadow
+        scene.add(moon);
 
-    //Define the objects that will be the earth and the moon
-    //Create geometry and material for the earth
-    var earthGeometry = new THREE.SphereGeometry(50, 50, 50);
-    var earthMaterial = new THREE.MeshPhongMaterial({
-      map: new THREE.TextureLoader().load("https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/The_Earth_seen_from_Apollo_17.jpg/300px-The_Earth_seen_from_Apollo_17.jpg"),
-      color: 0xaaaaaa,
-      specular: 0x333333,
-      shininess: 10
-    });
-    //Build earth mesh using our geometry and material
-    var earth = new THREE.Mesh(earthGeometry, earthMaterial);
-    //add the earth mesh to the scene
-    scene.add(earth);
-    earth.receiveShadow = true;
-    earth.castShadow = true;
-    //Create geometry and material for the earth
-    var moonGeometry = new THREE.SphereGeometry(15, 50, 50);
-    var moonMaterial = new THREE.MeshPhongMaterial({
-      map: new THREE.TextureLoader().load("https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/FullMoon2010.jpg/280px-FullMoon2010.jpg"),
-      color: 0xaaaaaa,
-      specular: 0x333333,
-      shininess: 10
-    });
-    //Build earth mesh using our geometry and material
-    var moon = new THREE.Mesh(moonGeometry, moonMaterial);
-    // place the moon in a position away from the earth
-    moon.position.x = 70
-    //add the earth mesh to the scene
-    scene.add(moon);
-    moon.receiveShadow = true;
-    moon.castShadow = true;
-    var r = 70;
-    var theta = 0;
-    var dTheta = 0.8 * Math.PI / 100;
-    function animate() {
-      requestAnimationFrame(animate);
-      render();
-    }
-    function render() {
-      cameraControls.update();
-      earth.rotation.y += 0.01
-      moon.rotation.y -= 0.03
-      //Increment theta, and update moon x and y
-      //position based off new theta value
-      theta -= dTheta;
-      moon.position.x = r * Math.cos(theta);
-      moon.position.z = r * Math.sin(theta);
-      renderer.render(scene, camera);
-    }
-    animate();
-  </script>
+        // Position the Moon relative to the Earth
+        moon.position.x = 70;  // Set the moon's distance from Earth
+
+        // 5. Camera setup
+        camera.position.z = 200;  // Place the camera far enough to see the Earth and Moon
+
+        // 6. Animation function
+        var animate = function () {
+            requestAnimationFrame(animate);
+
+            // 7. Rotate the Earth on its axis
+            earth.rotation.y += 0.01;
+
+            // 8. Rotate the Moon on its axis
+            moon.rotation.y -= 0.03;
+
+            // 9. Make the Moon rotate around the Earth
+            var theta = Date.now() * 0.0005;  // Use current time to update position
+            moon.position.x = 70 * Math.cos(theta);  // Moon's X position changes in orbit
+            moon.position.z = 70 * Math.sin(theta);  // Moon's Z position changes in orbit
+
+            // 10. Render the scene
+            renderer.render(scene, camera);
+        };
+
+        // Start the animation
+        animate();
+
+        // 11. Handle resizing of the window
+        window.addEventListener('resize', function () {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+    </script>
+</body>
 </html>
