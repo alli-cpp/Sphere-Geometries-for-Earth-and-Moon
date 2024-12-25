@@ -1,1 +1,148 @@
+<html>
+  <head>
+    <script type="text/javascript" src="https://getfirebug.com/firebug-lite-debug.js"></script>
+    <meta name="description" content="CS4406 Computer Graphics - Exercise #6" />
+    <meta charset="utf-8" />
+    <title>Assignment UNIT # 6, Earth and Moon</title>
+    <style>
+      #container {
+        background: #ffffff;
+      }
+    </style>
+    <meta charset="utf-8" />
+    <title></title>
+  </head>
+  <body>
+    <div id="container"></div>
+  </body>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+  <script src="http://uopeopleweb.com/js/dat.gui.min.js"></script>
+  <script src="https://threejs.org/build/three.js"></script>
+  <script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/controls/OrbitControls.js"></script>
+  <script src="http://uopeopleweb.com/js/math.js"></script>
+  <script src="http://uopeopleweb.com/js/Detector.js"></script>
+
+  <script type="text/javascript">
+    var WIDTH = 600,
+      HEIGHT = 400;
+    // set some camera attributes
+    var VIEW_ANGLE = 20,
+      ASPECT = WIDTH / HEIGHT,
+      NEAR = 1,
+      FAR = 1000;
+    // get the DOM element to attach to
+    var $container = $('#container');
+    // create a WebGL renderer
+    var renderer = new THREE.WebGLRenderer({ antialias: true });
+
+    // create scene
+    var scene = new THREE.Scene();
+    var clock = new THREE.Clock();
+
+    // create camera and add to scene
+    var camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+    camera.position.z = 600;
+
+    scene.add(camera);
+
+    // disable rotating camera
+    var cameraControls = new THREE.OrbitControls(camera, renderer.domElement);
+    cameraControls.enabled = false;
+    renderer.setSize(WIDTH, HEIGHT);
+    // attach the render-supplied DOM element
+    $container.append(renderer.domElement);
+
+    // LIGHTING
+    // Create a new ambient light
+    var light = new THREE.AmbientLight(0x888888);
+    // Create a new directional light
+    var directionalLight = new THREE.DirectionalLight(0xfdfcf0, 1);
+    directionalLight.position.set(100, 0, 80);
+    directionalLight.castShadow = true;
+    scene.add(directionalLight);
+
+    // Loading Manager for placeholders
+    var manager = new THREE.LoadingManager();
+
+    // Placeholder images for Earth and Moon
+    var placeholderEarth = "https://via.placeholder.com/150?text=Earth";
+    var placeholderMoon = "https://via.placeholder.com/150?text=Moon";
+
+    // Texture Loader with the loading manager
+    var loader = new THREE.TextureLoader(manager);
+
+    // Default textures for Earth and Moon set to placeholders
+    var earthMaterial = new THREE.MeshPhongMaterial({
+      map: new THREE.TextureLoader().load(placeholderEarth),
+      color: 0xaaaaaa,
+      specular: 0x333333,
+      shininess: 10
+    });
+
+    var moonMaterial = new THREE.MeshPhongMaterial({
+      map: new THREE.TextureLoader().load(placeholderMoon),
+      color: 0xaaaaaa,
+      specular: 0x333333,
+      shininess: 10
+    });
+
+    // Load textures for Earth and Moon
+    loader.load(
+      "https://upload.wikimedia.org/wikipedia/commons/c/cf/WorldMap-A_non-Frame.png",
+      function (texture) {
+        earthMaterial.map = texture;
+        earth.material = earthMaterial;
+      }
+    );
+
+    loader.load(
+      "https://upload.wikimedia.org/wikipedia/commons/d/db/Moonmap_from_clementine_data.png",
+      function (texture) {
+        moonMaterial.map = texture;
+        moon.material = moonMaterial;
+      }
+    );
+
+    // Define the objects that will be the Earth and the Moon
+    // Create geometry and material for the Earth
+    var earthGeometry = new THREE.SphereGeometry(50, 50, 50);
+    var earth = new THREE.Mesh(earthGeometry, earthMaterial);
+    // Add the Earth mesh to the scene
+    scene.add(earth);
+    earth.receiveShadow = true;
+    earth.castShadow = true;
+
+    // Create geometry and material for the Moon
+    var moonGeometry = new THREE.SphereGeometry(15, 50, 50);
+    var moon = new THREE.Mesh(moonGeometry, moonMaterial);
+    // Place the moon in a position away from the Earth
+    moon.position.x = 70;
+    // Add the Moon mesh to the scene
+    scene.add(moon);
+    moon.receiveShadow = true;
+    moon.castShadow = true;
+
+    var r = 70;
+    var theta = 0;
+    var dTheta = 0.8 * Math.PI / 100;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      render();
+    }
+
+    function render() {
+      cameraControls.update();
+      earth.rotation.y += 0.01;
+      moon.rotation.y -= 0.03;
+      // Increment theta, and update Moon's position based on new theta value
+      theta -= dTheta;
+      moon.position.x = r * Math.cos(theta);
+      moon.position.z = r * Math.sin(theta);
+      renderer.render(scene, camera);
+    }
+
+    animate();
+  </script>
+</html>
 
